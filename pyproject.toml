@@ -1,0 +1,32 @@
+[project]
+name = "antijob_bot"
+dependencies = [
+    "python-telegram-bot>=20.0",
+]
+requires-python = ">=3.10"
+license = {text = "AGPL-3.0-or-later"}
+
+[project.scripts]
+antijob_bot = "antijob_bot.__main__:application.run_polling"
+
+[build-system]
+requires = ["pdm-pep517"]
+build-backend = "pdm.pep517.api"
+
+[tool.pdm.dev-dependencies]
+dev = [
+    "black>=23.1.0",
+    "isort>=5.12.0",
+    "mypy>=1.0.1",
+]
+
+[tool.pdm.scripts]
+_.env_file = ".env"
+
+[tool.isort]
+profile = "black"
+force_single_line = true
+skip_gitignore = true
+
+[tool.mypy]
+mypy_path = "$MYPY_CONFIG_FILE_DIR/src"
