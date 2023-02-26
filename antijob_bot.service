@@ -1,0 +1,9 @@
+[Service]
+Type=simple
+WorkingDirectory=/opt/antijob_bot
+ExecStartPre=pdm install
+ExecStart=pdm run antijob_bot
+Restart=always
+
+[Install]
+WantedBy=multi-user.target

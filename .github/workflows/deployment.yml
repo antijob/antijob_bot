@@ -1,0 +1,23 @@
+name: deployment
+
+on:
+  push:
+    branches: [main]
+
+jobs:
+  deployment:
+    runs-on: ubuntu-latest
+    steps:
+    - name: Configure SSH
+      run: |
+        install -m 600 -D /dev/null ~/.ssh/id_ed25519
+        echo "${{ secrets.SSH_PRIVATE_KEY }}" > ~/.ssh/id_ed25519
+        ssh-keyscan -H "{{ secrets.SSH_HOST }}" > ~/.ssh/known_hosts
+    - name: Update the bot
+      run: ssh ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }} "
+        cd /opt/antijob_bot
+        && git fetch
+        && git reset --hard origin/main
+        && systemctl --user restart antijob_bot"
+    - name: Cleanup
+      run: rm -r ~/.ssh
