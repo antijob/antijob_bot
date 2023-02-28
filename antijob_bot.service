@@ -1,6 +1,7 @@
 [Service]
 Type=simple
 WorkingDirectory=/opt/antijob_bot
+ExecSearchPath=%h/.local/bin:/usr/bin
 ExecStartPre=pdm install
 ExecStart=pdm run antijob_bot
 Restart=always

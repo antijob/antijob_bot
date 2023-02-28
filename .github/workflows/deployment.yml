@@ -18,6 +18,7 @@ jobs:
         cd /opt/antijob_bot
         && git fetch
         && git reset --hard origin/main
+        && systemctl --user daemon-reload
         && systemctl --user restart antijob_bot"
     - name: Cleanup
       run: rm -r ~/.ssh
