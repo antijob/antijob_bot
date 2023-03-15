@@ -2,6 +2,8 @@
 name = "antijob_bot"
 dependencies = [
     "python-telegram-bot>=20.0",
+    "redis[hiredis]>=4.5.1",
+    "ptbcontrib @ git+https://github.com/python-telegram-bot/ptbcontrib.git@main",
 ]
 requires-python = ">=3.10"
 license = {text = "AGPL-3.0-or-later"}
@@ -18,6 +20,7 @@ dev = [
     "black>=23.1.0",
     "isort>=5.12.0",
     "mypy>=1.0.1",
+    "types-redis>=4.5.1.5",
 ]
 
 [tool.pdm.scripts]

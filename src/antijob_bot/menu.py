@@ -41,17 +41,22 @@ class MenuItem:
 
 
 class Menu:
-    def __init__(self, *items: typing.Sequence[MenuItem]):
-        self.items = items
+    items: typing.Sequence[typing.Sequence[MenuItem]]
 
-    def keyboard(self, admin: bool = False) -> list[list[KeyboardButton | str]]:
+    @classmethod
+    def init(cls, *items: typing.Sequence[MenuItem]):
+        cls.items = items
+
+    @classmethod
+    def keyboard(cls, admin: bool = False) -> list[list[KeyboardButton | str]]:
         return [
             [item.button for item in row if not item.admin or admin]
-            for row in self.items
+            for row in cls.items
         ]
 
+    @classmethod
     def reply_markup(
-        self,
+        cls,
         update: Update | None = None,
         *,
         one_time_keyboard: bool = True,
@@ -62,21 +67,24 @@ class Menu:
         else:
             admin = False
         return ReplyKeyboardMarkup(
-            self.keyboard(admin=admin),
+            cls.keyboard(admin=admin),
             one_time_keyboard=one_time_keyboard,
             **kwargs,
         )
 
-    def _item_generator(self) -> typing.Generator[MenuItem, None, None]:
-        for row in self.items:
+    @classmethod
+    def _item_generator(cls) -> typing.Generator[MenuItem, None, None]:
+        for row in cls.items:
             for item in row:
                 yield item
 
-    def handlers(self) -> list[MessageHandler]:
-        return [item.handler for item in self._item_generator() if item.handler]
+    @classmethod
+    def handlers(cls) -> list[MessageHandler]:
+        return [item.handler for item in cls._item_generator() if item.handler]
 
-    def entry_point_handler(self, conversation: Conversation) -> MessageHandler:
-        for item in self._item_generator():
+    @classmethod
+    def entry_point_handler(cls, conversation: Conversation) -> MessageHandler:
+        for item in cls._item_generator():
             if item.enter == conversation:
                 if item.handler:
                     return item.handler
