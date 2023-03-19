@@ -47,7 +47,7 @@ async def enter_broadcast(update: Update, context: ContextTypes.DEFAULT_TYPE) ->
     await update.message.reply_text(
         "Отправьте сообщение для рассылки.", reply_markup=reply_markup
     )
-    return conversations.EXPECT_MESSAGE
+    return conversations.Conversation.EXPECT_MESSAGE
 
 
 async def send_broadcast(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:

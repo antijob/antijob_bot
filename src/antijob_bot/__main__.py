@@ -57,7 +57,7 @@ start_handler = CommandHandler("start", callbacks.start.start)
 feedback_handler = ConversationHandler(
     entry_points=[Menu.entry_point_handler(conversations.Conversation.FEEDBACK)],
     states={
-        conversations.EXPECT_MESSAGE: [
+        conversations.Conversation.EXPECT_MESSAGE: [
             MessageHandler(filters.ALL, callbacks.feedback.send_feedback)
         ]
     },
@@ -74,7 +74,7 @@ feedback_handler = ConversationHandler(
 broadcast_handler = ConversationHandler(
     entry_points=[Menu.entry_point_handler(conversations.Conversation.BROADCAST)],
     states={
-        conversations.EXPECT_MESSAGE: [
+        conversations.Conversation.EXPECT_MESSAGE: [
             MessageHandler(filters.ALL, callbacks.broadcast.send_broadcast)
         ]
     },

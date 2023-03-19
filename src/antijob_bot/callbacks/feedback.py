@@ -26,7 +26,7 @@ async def enter_feedback(update: Update, context: ContextTypes.DEFAULT_TYPE) -> 
         InlineKeyboardButton("Отмена", callback_data=conversations.CANCEL_FEEDBACK_DATA)
     )
     await update.message.reply_text("Напишите сообщение.", reply_markup=reply_markup)
-    return conversations.EXPECT_MESSAGE
+    return conversations.Conversation.EXPECT_MESSAGE
 
 
 async def send_feedback(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
