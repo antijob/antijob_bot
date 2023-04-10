@@ -3,4 +3,3 @@ __pypackages__/
 dist/
 .pdm.toml
 .env
-users.txt

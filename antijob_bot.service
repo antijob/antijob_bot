@@ -2,7 +2,7 @@
 Type=simple
 WorkingDirectory=/opt/antijob_bot
 ExecSearchPath=%h/.local/bin:/usr/bin
-ExecStartPre=pdm install
+ExecStartPre=pdm install --prod --no-lock --no-editable
 ExecStart=pdm run antijob_bot
 Restart=always
 

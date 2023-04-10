@@ -1,0 +1,10 @@
+*
+
+!src
+!pdm.lock
+!pyproject.toml
+!COPYING
+!.env
+
+**/__pycache__
+**/.mypy_cache
