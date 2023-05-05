@@ -5,35 +5,9 @@ on:
     branches: [main]
 
 jobs:
-  deployment:
-    runs-on: ubuntu-latest
-    steps:
-    - name: Configure SSH
-      run: |
-        install -m 600 -D /dev/null ~/.ssh/id_ed25519
-        echo "${{ secrets.SSH_PRIVATE_KEY }}" > ~/.ssh/id_ed25519
-        ssh-keyscan -H "${{ secrets.SSH_HOST }}" > ~/.ssh/known_hosts
-    - name: Update the bot
-      run: ssh ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }} "
-        cd /opt/antijob_bot
-        && git fetch
-        && git reset --hard origin/main
-        && systemctl --user daemon-reload
-        && systemctl --user restart antijob_bot"
-    - name: Cleanup
-      run: rm -r ~/.ssh
-
-
-name: CI
-
-on:
-  push:
-    branches:
-      - main
-jobs:
   check-secrets:
     name: Check for exposed secrets
-    runs-on: 'ubuntu-latest'
+    runs-on: "ubuntu-latest"
     steps:
       - uses: actions/checkout@v3
       - run: |
@@ -43,7 +17,7 @@ jobs:
             --host-mount-path /deepfence/mnt --local /deepfence/mnt
   build:
     name: Build production
-    runs-on: [ 'self-hosted', 'antijob-bot', 'production' ]
+    runs-on: ["self-hosted", "antijob-bot", "production"]
     needs:
       - check-secrets
     steps:
@@ -71,7 +45,7 @@ jobs:
     name: Start production
     needs:
       - build
-    runs-on: [ 'self-hosted', 'antijob-bot', 'production' ]
+    runs-on: ["self-hosted", "antijob-bot", "production"]
     steps:
       - name: Approve deployment
         uses: trstringer/manual-approval@v1
