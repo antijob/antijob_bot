@@ -54,10 +54,10 @@ jobs:
           cd app
           cp .env.example .env
           sed -i \
-            -e "s,^TOKEN=.*,SERVER_URL=http://10.110.0.3," \
-            -e "s,^DB_PASSWORD=.*,DOMAIN=https://antijob.net," \
-            -e "s,^ADMINS=.*,MEDIA_DOMAIN=https://antijob.media/," \
-            -e "s,^FEEDBACK_CHAT_ID=.*,FILE_STORAGE=https://storage.antijob.net," \
+            -e "s,^TOKEN=.*,TOKEN=${TOKEN}," \
+            -e "s,^DB_PASSWORD=.*,DOMAIN=${SENTRY_DNS}," \
+            -e "s,^ADMINS=.*,ADMINS=${ADMINS}," \
+            -e "s,^FEEDBACK_CHAT_ID=.*,FEEDBACK_CHAT_ID=${FEEDBACK_CHAT_ID}," \
           .env
         env:
           TOKEN: "${{ secrets.TOKEN }}"
