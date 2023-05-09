@@ -6,6 +6,10 @@ services:
     env_file:
       - .env
     restart: on-failure
+    deploy:
+      resources:
+        limits:
+          memory: 256M
 
   redis:
     image: redis
