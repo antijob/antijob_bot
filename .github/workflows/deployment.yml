@@ -53,7 +53,5 @@ jobs:
           secret: ${{ github.TOKEN }}
           approvers: Vldln,person63846
           minimum-approvals: 1
-
       - name: Start the app
-        run: |
-          docker-compose up -d
+        run: docker-compose up -d
