@@ -29,7 +29,7 @@ jobs:
           cp .env.example .env
           sed -i \
             -e "s,^TOKEN=.*,TOKEN=${TOKEN}," \
-            -e "s,^DB_PASSWORD=.*,DOMAIN=${SENTRY_DNS}," \
+            -e "s,^DB_PASSWORD=.*,DB_PASSWORD=${DB_PASSWORD}," \
             -e "s,^ADMINS=.*,ADMINS=${ADMINS}," \
             -e "s,^FEEDBACK_CHAT_ID=.*,FEEDBACK_CHAT_ID=${FEEDBACK_CHAT_ID}," \
           .env
