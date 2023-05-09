@@ -13,8 +13,8 @@ services:
     image: redis
     container_name: ${DB_HOST}
     command: redis-server --port ${DB_PORT} --requirepass ${DB_PASSWORD}
-    ports:
-      - ${DB_PORT}:${DB_PORT}
+    expose:
+      - ${DB_PORT}
     volumes:
       - redis:/data
     networks:
