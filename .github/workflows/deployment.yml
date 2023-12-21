@@ -4,11 +4,22 @@ on:
   push:
     branches:
       - main
+  workflow_dispatch:
+    inputs:
+      runType:
+        description: "How to run this build?"
+        required: true
+        default: "default"
+        type: choice
+        options:
+          - Force build
+          - Default
 
 jobs:
   build:
     name: Build production
     runs-on: ["self-hosted", "antijob-bot", "production"]
+    if: github.ref == 'refs/heads/main'
     steps:
       - name: Check out repository code
         uses: actions/checkout@v3
@@ -34,6 +45,7 @@ jobs:
     needs:
       - build
     runs-on: ["self-hosted", "antijob-bot", "production"]
+    if: github.ref == 'refs/heads/main'
     steps:
       - name: Start the app
         run: docker-compose up -d
