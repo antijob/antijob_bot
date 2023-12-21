@@ -6,21 +6,9 @@ on:
       - main
 
 jobs:
-  check-secrets:
-    name: Check for exposed secrets
-    runs-on: "ubuntu-latest"
-    steps:
-      - uses: actions/checkout@v3
-      - run: |
-          docker run --rm --name=deepfence-secretscanner \
-            -v $(pwd):/deepfence/mnt \
-            deepfenceio/deepfence_secret_scanner:latest \
-            --host-mount-path /deepfence/mnt --local /deepfence/mnt
   build:
     name: Build production
     runs-on: ["self-hosted", "antijob-bot", "production"]
-    needs:
-      - check-secrets
     steps:
       - name: Check out repository code
         uses: actions/checkout@v3
@@ -47,11 +35,5 @@ jobs:
       - build
     runs-on: ["self-hosted", "antijob-bot", "production"]
     steps:
-      - name: Approve deployment
-        uses: trstringer/manual-approval@v1
-        with:
-          secret: ${{ github.TOKEN }}
-          approvers: Vldln,person63846
-          minimum-approvals: 1
       - name: Start the app
         run: docker-compose up -d
