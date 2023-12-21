@@ -8,6 +8,13 @@ services:
     restart: on-failure
     networks:
       - antijob_bot
+    logging:
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "3"
+        mode: "non-blocking"
+        max-buffer-size: "4m"
 
   redis:
     image: redis
@@ -19,6 +26,13 @@ services:
       - redis:/data
     networks:
       - antijob_bot
+    logging:
+      driver: json-file
+      options:
+        max-size: "5m"
+        max-file: "2"
+        mode: "non-blocking"
+        max-buffer-size: "2m"
 
 volumes:
   redis:
