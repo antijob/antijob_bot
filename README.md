@@ -8,5 +8,14 @@
 
 Телеграм-бот для [antijob.net](https://antijob.net/).
 
+## Запуск
+
+- Локально (compose): `docker compose up --build`
+- Продакшн (swarm): `docker stack deploy --compose-file docker-compose.prod.yml antijob_bot`
+
+Для запуска на том же swarm-узле, где работает `antijob/reviews-bot`,
+используется ограничение `node.labels.service == ${SWARM_NODE_SERVICE_LABEL}`.
+По умолчанию: `SWARM_NODE_SERVICE_LABEL=antijob_bot_reviews`.
+
 ## Лицензия
 antijob_bot выпущен под GNU Affero General Public License v3.0. Смотрите [COPYING](COPYING) для полных условий лицензирования.
