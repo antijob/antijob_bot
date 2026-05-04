@@ -9,15 +9,15 @@ repos:
   hooks:
     - id: sync_with_pdm
 - repo: https://github.com/psf/black
-  rev: 23.1.0
+  rev: 26.3.1
   hooks:
     - id: black
 - repo: https://github.com/pycqa/isort
-  rev: 5.12.0
+  rev: 8.0.1
   hooks:
     - id: isort
 - repo: https://github.com/pre-commit/mirrors-mypy
-  rev: v1.11.2
+  rev: v1.20.2
   hooks:
     - id: mypy
       additional_dependencies: [types-redis]
