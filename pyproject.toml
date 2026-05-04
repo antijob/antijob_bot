@@ -19,7 +19,7 @@ build-backend = "pdm.pep517.api"
 dev = [
     "black>=23.1.0",
     "isort>=5.12.0",
-    "mypy>=1.0.1",
+    "mypy>=1.11.2",
     "types-redis>=4.5.1.5",
 ]
 
