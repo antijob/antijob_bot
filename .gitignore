@@ -3,3 +3,5 @@ __pypackages__/
 dist/
 .pdm.toml
 .env
+venv/
+.pdm-python

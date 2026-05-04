@@ -4,6 +4,8 @@ on:
   push:
     branches:
       - main
+    tags:
+      - "v*"
   workflow_dispatch:
     inputs:
       runType:
@@ -16,13 +18,22 @@ on:
           - Default
 
 jobs:
-  build:
-    name: Build production
-    runs-on: ["self-hosted", "antijob-bot", "production"]
-    if: github.ref == 'refs/heads/main'
+  deploy:
+    name: Build and deploy production
+    runs-on: [ "self-hosted", "antijob-bot", "production" ]
+    if: github.ref == 'refs/heads/main' || startsWith(github.ref, 'refs/tags/v')
     steps:
       - name: Check out repository code
         uses: actions/checkout@v3
+      - name: Resolve image tag
+        run: |
+          if [ "${GITHUB_REF_TYPE}" = "tag" ]; then
+            IMAGE_TAG="${GITHUB_REF_NAME#v}"
+          else
+            IMAGE_TAG="main-${GITHUB_SHA::7}"
+          fi
+          echo "IMAGE_TAG=${IMAGE_TAG}" >> "${GITHUB_ENV}"
+          echo "Resolved IMAGE_TAG=${IMAGE_TAG}"
       - name: Prepare .env
         run: |
           cp .env.example .env
@@ -38,14 +49,10 @@ jobs:
           ADMINS: "${{ secrets.ADMINS }}"
           FEEDBACK_CHAT_ID: "${{ secrets.FEEDBACK_CHAT_ID }}"
       - name: Build image
-        run: docker-compose build
-
-  start:
-    name: Start production
-    needs:
-      - build
-    runs-on: ["self-hosted", "antijob-bot", "production"]
-    if: github.ref == 'refs/heads/main'
-    steps:
-      - name: Start the app
-        run: docker-compose up -d
+        run: |
+          docker build \
+            -t "antijob_bot:${IMAGE_TAG}" \
+            -t antijob_bot:main \
+            .
+      - name: Deploy stack
+        run: IMAGE_TAG="${IMAGE_TAG}" docker stack deploy --compose-file docker-compose.prod.yml antijob_bot

@@ -1,0 +1,94 @@
+x-deploy: &deploy
+  deploy:
+    placement:
+      constraints:
+        - "node.role==worker"
+        - "node.labels.service==antijob_bot_reviews}"
+        - "node.labels.environment==production"
+    replicas: 1
+    update_config:
+      order: start-first
+      parallelism: 1
+      delay: 10s
+    rollback_config:
+      order: stop-first
+      parallelism: 1
+    restart_policy:
+      condition: any
+      delay: 5s
+      max_attempts: 2
+      window: 120s
+services:
+
+  antijob_bot:
+    <<: *deploy
+    image: antijob_bot:${IMAGE_TAG:-main}
+    environment:
+      TOKEN: ${TOKEN}
+      DB_HOST: ${DB_HOST:-redis}
+      DB_PORT: ${DB_PORT:-6379}
+      DB_PASSWORD: ${DB_PASSWORD}
+      ADMINS: ${ADMINS}
+      FEEDBACK_CHAT_ID: ${FEEDBACK_CHAT_ID}
+      MAIN_URL: ${MAIN_URL:-https://antijob.net}
+      NEWS_URL: ${NEWS_URL:-https://antijob.media}
+    networks:
+      - antijob_bot
+    logging:
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "3"
+        mode: "non-blocking"
+        max-buffer-size: "4m"
+
+  redis:
+    <<: *deploy
+    image: redis:7-alpine
+    command:
+      - sh
+      - -c
+      - redis-server --port ${DB_PORT:-6379} --requirepass "$$(cat
+        /run/secrets/redis_password)"
+    volumes:
+      - redis:/data
+    secrets:
+      - redis_password
+    networks:
+      - antijob_bot
+    deploy:
+      update_config:
+        order: stop-first
+        parallelism: 1
+        delay: 10s
+    healthcheck:
+      test:
+        [
+          "CMD-SHELL",
+          "redis-cli -p ${DB_PORT:-6379} -a \"$$(cat
+            /run/secrets/redis_password)\" ping | grep -q PONG",
+        ]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 15s
+    logging:
+      driver: json-file
+      options:
+        max-size: "5m"
+        max-file: "2"
+        mode: "non-blocking"
+        max-buffer-size: "2m"
+
+volumes:
+  redis:
+
+networks:
+  antijob_bot:
+    driver: overlay
+    attachable: true
+
+secrets:
+  redis_password:
+    external: true
+    name: antijob_bot_redis_password
