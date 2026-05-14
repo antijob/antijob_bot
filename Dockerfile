@@ -14,7 +14,8 @@ COPY --from=build /app/.venv /app/.venv
 COPY src ./src
 
 ENV PATH="/app/.venv/bin:$PATH" \
-    PYTHONUNBUFFERED=1
+    PYTHONUNBUFFERED=1 \
+    PYTHONPATH="/app/src"
 
 USER bot
 CMD ["python", "-m", "antijob_bot"]
