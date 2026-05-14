@@ -23,14 +23,19 @@ services:
     <<: *deploy
     image: antijob/antijob-bot:${IMAGE_TAG:-main}
     environment:
-      TOKEN: ${TOKEN}
+      TOKEN_FILE: /run/secrets/TOKEN
       DB_HOST: ${DB_HOST:-redis}
       DB_PORT: ${DB_PORT:-6379}
-      DB_PASSWORD: ${DB_PASSWORD}
+      DB_PASSWORD_FILE: /run/secrets/DB_PASSWORD
       ADMINS: ${ADMINS}
       FEEDBACK_CHAT_ID: ${FEEDBACK_CHAT_ID}
       MAIN_URL: ${MAIN_URL:-https://antijob.net}
       NEWS_URL: ${NEWS_URL:-https://antijob.media}
+    secrets:
+      - source: TOKEN
+        target: TOKEN
+      - source: DB_PASSWORD
+        target: DB_PASSWORD
     networks:
       - bot
     logging:
@@ -44,10 +49,13 @@ services:
   redis:
     <<: *deploy
     image: redis:7-alpine
+    secrets:
+      - source: DB_PASSWORD
+        target: DB_PASSWORD
     command:
       - sh
       - -c
-      - redis-server --port ${DB_PORT:-6379} --requirepass "${DB_PASSWORD}"
+      - redis-server --port ${DB_PORT:-6379} --requirepass "$$(cat /run/secrets/DB_PASSWORD)"
     volumes:
       - redis:/data
     networks:
@@ -61,7 +69,7 @@ services:
       test:
         [
           "CMD-SHELL",
-          'redis-cli -p ${DB_PORT:-6379} -a "${DB_PASSWORD}" ping | grep -q PONG',
+          'redis-cli -p ${DB_PORT:-6379} -a "$$(cat /run/secrets/DB_PASSWORD)" ping | grep -q PONG',
         ]
       interval: 10s
       timeout: 5s
@@ -82,3 +90,11 @@ networks:
   bot:
     driver: overlay
     attachable: true
+
+secrets:
+  TOKEN:
+    external: true
+    name: secret.TOKEN
+  DB_PASSWORD:
+    external: true
+    name: secret.DB_PASSWORD

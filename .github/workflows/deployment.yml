@@ -110,16 +110,26 @@ jobs:
         run: |
           cp .env.example .env
           sed -i \
-            -e "s,^TOKEN=.*,TOKEN=${TOKEN}," \
-            -e "s,^DB_PASSWORD=.*,DB_PASSWORD=${DB_PASSWORD}," \
             -e "s,^ADMINS=.*,ADMINS=${ADMINS}," \
             -e "s,^FEEDBACK_CHAT_ID=.*,FEEDBACK_CHAT_ID=${FEEDBACK_CHAT_ID}," \
           .env
         env:
-          TOKEN: "${{ secrets.TOKEN }}"
-          DB_PASSWORD: "${{ secrets.DB_PASSWORD }}"
           ADMINS: "${{ secrets.ADMINS }}"
           FEEDBACK_CHAT_ID: "${{ secrets.FEEDBACK_CHAT_ID }}"
+
+      - name: Ensure swarm secrets exist
+        if: github.ref == 'refs/heads/main'
+        run: |
+          if ! docker secret inspect secret.TOKEN >/dev/null 2>&1; then
+            printf '%s' "${TOKEN}" | docker secret create secret.TOKEN -
+          fi
+
+          if ! docker secret inspect secret.DB_PASSWORD >/dev/null 2>&1; then
+            printf '%s' "${DB_PASSWORD}" | docker secret create secret.DB_PASSWORD -
+          fi
+        env:
+          TOKEN: "${{ secrets.TOKEN }}"
+          DB_PASSWORD: "${{ secrets.DB_PASSWORD }}"
 
       - name: Deploy stack
         if: github.ref == 'refs/heads/main'
