@@ -105,18 +105,6 @@ jobs:
           DOCKER_USERNAME: antijob
           DOCKER_PULL_TOKEN: ${{ secrets.DOCKER_PULL_TOKEN }}
 
-      - name: Prepare .env
-        if: github.ref == 'refs/heads/main'
-        run: |
-          cp .env.example .env
-          sed -i \
-            -e "s,^ADMINS=.*,ADMINS=${ADMINS}," \
-            -e "s,^FEEDBACK_CHAT_ID=.*,FEEDBACK_CHAT_ID=${FEEDBACK_CHAT_ID}," \
-          .env
-        env:
-          ADMINS: "${{ secrets.ADMINS }}"
-          FEEDBACK_CHAT_ID: "${{ secrets.FEEDBACK_CHAT_ID }}"
-
       - name: Ensure swarm secrets exist
         if: github.ref == 'refs/heads/main'
         run: |
@@ -133,6 +121,9 @@ jobs:
 
       - name: Deploy stack
         if: github.ref == 'refs/heads/main'
+        env:
+          ADMINS: "${{ secrets.ADMINS }}"
+          FEEDBACK_CHAT_ID: "${{ secrets.FEEDBACK_CHAT_ID }}"
         run: |
           # Use SHA tag if available, otherwise fallback to main
           DEPLOY_TAG="${IMAGE_TAG:-main}"
