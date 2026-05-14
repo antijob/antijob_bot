@@ -49,10 +49,9 @@ jobs:
       - uses: dorny/paths-filter@v2
         id: filter
         with:
-          base: ${{ github.ref }}
           filters: |
             bot:
-              - 'app/**'
+              - 'src/**'
               - '.github/**'
               - 'Dockerfile'
               - 'docker-compose.prod.yml'
@@ -63,7 +62,7 @@ jobs:
 
       - name: Build image
         id: build-image
-        if: ${{ ( steps.filter.outputs.bot == 'true' || github.event.inputs.runType == 'force build' ) && github.ref == 'refs/heads/main' }}
+        if: ${{ ( steps.filter.outputs.bot == 'true' || github.event.inputs.runType == 'Force build' ) && github.ref == 'refs/heads/main' }}
         run: |
           BRANCH_NAME=${GITHUB_REF#refs/heads/}
           COMMIT_HASH=${GITHUB_SHA::7}
