@@ -37,13 +37,12 @@ jobs:
           echo "BRANCH_NAME=${BRANCH_NAME}" >> $GITHUB_OUTPUT
           echo "COMMIT_HASH=${COMMIT_HASH}" >> $GITHUB_OUTPUT
 
-      - name: Configure Docker Hub auth credentials
+      - name: Docker login
         run: |
-          echo $DOCKER_PUSH_TOKEN > .docker_password
-          cat .docker_password | docker login --username $DOCKER_USERNAME --password-stdin
+          echo "$DOCKER_PULL_TOKEN" | docker login --username "$DOCKER_USERNAME" --password-stdin
         env:
           DOCKER_USERNAME: antijob
-          DOCKER_PUSH_TOKEN: ${{ secrets.DOCKER_PUSH_TOKEN }}
+          DOCKER_PULL_TOKEN: ${{ secrets.DOCKER_PULL_TOKEN }}
 
       # Build these images only when related files are changed
       - uses: dorny/paths-filter@v2
@@ -99,18 +98,12 @@ jobs:
     steps:
       - uses: actions/checkout@v3
 
-      - name: Docker login
+      - name: Configure Docker Hub auth credentials
         run: |
-          echo $DOCKER_PULL_TOKEN > .docker_password
-          if cat .docker_password | docker login --username $DOCKER_USERNAME --password-stdin; then
-            echo "Login successful"
-          else
-            echo "Login failed"
-            exit 1
-          fi
+          echo "$DOCKER_PUSH_TOKEN" | docker login --username "$DOCKER_USERNAME" --password-stdin
         env:
           DOCKER_USERNAME: antijob
-          DOCKER_PULL_TOKEN: ${{ secrets.DOCKER_PULL_TOKEN }}
+          DOCKER_PUSH_TOKEN: ${{ secrets.DOCKER_PUSH_TOKEN }}
 
       - name: Prepare .env
         if: github.ref == 'refs/heads/main'
