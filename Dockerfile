@@ -1,6 +1,7 @@
-FROM python:3.10-slim as build
+FROM python:3.10-slim AS build
 
 WORKDIR /app
+RUN apt-get update && apt-get install -y --no-install-recommends git && rm -rf /var/lib/apt/lists/*
 RUN pip install pdm
 COPY pyproject.toml pyproject.lock* ./
 RUN pdm install --prod --no-editable
