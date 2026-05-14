@@ -18,23 +18,103 @@ on:
           - Default
 
 jobs:
-  deploy:
-    name: Build and deploy production
-    runs-on: [ "self-hosted", "antijob-bot", "production" ]
-    if: github.ref == 'refs/heads/main' || startsWith(github.ref, 'refs/tags/v')
+  build:
+    if: github.event_name != 'pull_request' && github.ref == 'refs/heads/main'
+    outputs:
+      IMAGE_TAG: ${{ steps.build-image.outputs.IMAGE_TAG || steps.set-tag.outputs.IMAGE_TAG || 'main' }}
+      BRANCH_NAME: ${{ steps.set-branch.outputs.BRANCH_NAME }}
+    runs-on: ubuntu-latest
+    environment: ${{ github.ref == 'refs/heads/main' && 'Prod' || 'Unknown' }}
     steps:
       - name: Check out repository code
         uses: actions/checkout@v3
-      - name: Resolve image tag
+
+      - name: Set branch name and commit hash
+        id: set-branch
         run: |
-          if [ "${GITHUB_REF_TYPE}" = "tag" ]; then
-            IMAGE_TAG="${GITHUB_REF_NAME#v}"
+          BRANCH_NAME=${GITHUB_REF#refs/heads/}
+          COMMIT_HASH=${GITHUB_SHA::7}
+          echo "BRANCH_NAME=${BRANCH_NAME}" >> $GITHUB_OUTPUT
+          echo "COMMIT_HASH=${COMMIT_HASH}" >> $GITHUB_OUTPUT
+
+      - name: Configure Docker Hub auth credentials
+        run: |
+          echo $DOCKER_PUSH_TOKEN > .docker_password
+          cat .docker_password | docker login --username $DOCKER_USERNAME --password-stdin
+        env:
+          DOCKER_USERNAME: antijob
+          DOCKER_PUSH_TOKEN: ${{ secrets.DOCKER_PUSH_TOKEN }}
+
+      # Build these images only when related files are changed
+      - uses: dorny/paths-filter@v2
+        id: filter
+        with:
+          base: ${{ github.ref }}
+          filters: |
+            bot:
+              - 'app/**'
+              - '.github/**'
+              - 'Dockerfile'
+              - 'docker-compose.prod.yml'
+            traefik:
+              - 'docker-compose.prod.yml'
+            redis:
+              - 'docker-compose.prod.yml'
+
+      - name: Build image
+        id: build-image
+        if: ${{ ( steps.filter.outputs.bot == 'true' || github.event.inputs.runType == 'force build' ) && github.ref == 'refs/heads/main' }}
+        run: |
+          BRANCH_NAME=${GITHUB_REF#refs/heads/}
+          COMMIT_HASH=${GITHUB_SHA::7}
+
+          # Tag format: branch-commithash (e.g., main-fc18523)
+          IMAGE_TAG="${BRANCH_NAME}-${COMMIT_HASH}"
+
+          docker build . \
+            -t antijob/antijob-bot:${IMAGE_TAG} \
+            -t antijob/antijob-bot:${BRANCH_NAME} \
+            -t antijob/antijob-bot:latest
+
+          docker push antijob/antijob-bot:${IMAGE_TAG}
+          docker push antijob/antijob-bot:${BRANCH_NAME}
+          docker push antijob/antijob-bot:latest
+
+          echo "IMAGE_TAG=${IMAGE_TAG}" >> $GITHUB_OUTPUT
+
+      # Set IMAGE_TAG even if build was skipped (for deploy to use 'main' tag)
+      - name: Set fallback tag
+        id: set-tag
+        if: ${{ steps.build-image.outcome == 'skipped' && github.ref == 'refs/heads/main' }}
+        run: |
+          echo "IMAGE_TAG=main" >> $GITHUB_OUTPUT
+
+  deploy:
+    if: github.event_name != 'pull_request' && github.ref == 'refs/heads/main'
+    runs-on: ["self-hosted", "swarm_manager"]
+    environment: ${{ github.ref == 'refs/heads/main' && 'Prod' || 'Unknown' }}
+    needs:
+      - build
+    env:
+      IMAGE_TAG: ${{ needs.build.outputs.IMAGE_TAG }}
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Docker login
+        run: |
+          echo $DOCKER_PULL_TOKEN > .docker_password
+          if cat .docker_password | docker login --username $DOCKER_USERNAME --password-stdin; then
+            echo "Login successful"
           else
-            IMAGE_TAG="main-${GITHUB_SHA::7}"
+            echo "Login failed"
+            exit 1
           fi
-          echo "IMAGE_TAG=${IMAGE_TAG}" >> "${GITHUB_ENV}"
-          echo "Resolved IMAGE_TAG=${IMAGE_TAG}"
+        env:
+          DOCKER_USERNAME: antijob
+          DOCKER_PULL_TOKEN: ${{ secrets.DOCKER_PULL_TOKEN }}
+
       - name: Prepare .env
+        if: github.ref == 'refs/heads/main'
         run: |
           cp .env.example .env
           sed -i \
@@ -48,11 +128,22 @@ jobs:
           DB_PASSWORD: "${{ secrets.DB_PASSWORD }}"
           ADMINS: "${{ secrets.ADMINS }}"
           FEEDBACK_CHAT_ID: "${{ secrets.FEEDBACK_CHAT_ID }}"
-      - name: Build image
-        run: |
-          docker build \
-            -t "antijob_bot:${IMAGE_TAG}" \
-            -t antijob_bot:main \
-            .
+
       - name: Deploy stack
-        run: IMAGE_TAG="${IMAGE_TAG}" docker stack deploy --compose-file docker-compose.prod.yml antijob_bot
+        if: github.ref == 'refs/heads/main'
+        run: |
+          # Use SHA tag if available, otherwise fallback to main
+          DEPLOY_TAG="${IMAGE_TAG:-main}"
+          echo "Deploying image antijob/antijob-bot:${DEPLOY_TAG}"
+
+          # Pull new image first to ensure it's available
+          docker pull antijob/antijob-bot:${DEPLOY_TAG}
+
+          docker stack deploy \
+            --resolve-image always \
+            -c docker-compose.prod.yml \
+            --with-registry-auth \
+            antijob_bot
+
+          # Force update services to pull new images
+          docker service update --force --image antijob/antijob-bot:${DEPLOY_TAG} antijob_bot
