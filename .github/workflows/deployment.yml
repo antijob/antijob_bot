@@ -138,4 +138,4 @@ jobs:
             antijob_bot
 
           # Force update services to pull new images
-          docker service update --force --image antijob/antijob-bot:${DEPLOY_TAG} antijob_bot
+          docker service update --force --image antijob/antijob-bot:${DEPLOY_TAG} antijob_bot_bot
