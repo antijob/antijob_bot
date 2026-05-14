@@ -3,7 +3,7 @@ x-deploy: &deploy
     placement:
       constraints:
         - "node.role==worker"
-        - "node.labels.service==antijob_bot_reviews}"
+        - "node.labels.service==antijob_bot_reviews"
         - "node.labels.environment==production"
     replicas: 1
     update_config:
@@ -19,7 +19,6 @@ x-deploy: &deploy
       max_attempts: 2
       window: 120s
 services:
-
   antijob_bot:
     <<: *deploy
     image: antijob_bot:${IMAGE_TAG:-main}
@@ -62,11 +61,10 @@ services:
         parallelism: 1
         delay: 10s
     healthcheck:
-      test:
-        [
+      test: [
           "CMD-SHELL",
-          "redis-cli -p ${DB_PORT:-6379} -a \"$$(cat
-            /run/secrets/redis_password)\" ping | grep -q PONG",
+          'redis-cli -p ${DB_PORT:-6379} -a "$$(cat
+          /run/secrets/redis_password)" ping | grep -q PONG',
         ]
       interval: 10s
       timeout: 5s
