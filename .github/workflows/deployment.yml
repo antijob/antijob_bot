@@ -39,8 +39,7 @@ jobs:
 
       - name: Configure Docker Hub auth credentials
         run: |
-          echo $DOCKER_PUSH_TOKEN > .docker_password
-          cat .docker_password | docker login --username $DOCKER_USERNAME --password-stdin
+          echo "$DOCKER_PUSH_TOKEN" | docker login --username "$DOCKER_USERNAME" --password-stdin
         env:
           DOCKER_USERNAME: antijob
           DOCKER_PUSH_TOKEN: ${{ secrets.DOCKER_PUSH_TOKEN }}
@@ -101,13 +100,7 @@ jobs:
 
       - name: Docker login
         run: |
-          echo $DOCKER_PULL_TOKEN > .docker_password
-          if cat .docker_password | docker login --username $DOCKER_USERNAME --password-stdin; then
-            echo "Login successful"
-          else
-            echo "Login failed"
-            exit 1
-          fi
+          echo "$DOCKER_PULL_TOKEN" | docker login --username "$DOCKER_USERNAME" --password-stdin
         env:
           DOCKER_USERNAME: antijob
           DOCKER_PULL_TOKEN: ${{ secrets.DOCKER_PULL_TOKEN }}
