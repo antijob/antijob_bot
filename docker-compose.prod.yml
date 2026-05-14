@@ -19,9 +19,9 @@ x-deploy: &deploy
       max_attempts: 2
       window: 120s
 services:
-  antijob_bot:
+  bot:
     <<: *deploy
-    image: antijob_bot:${IMAGE_TAG:-main}
+    image: antijob/antijob-bot:${IMAGE_TAG:-main}
     environment:
       TOKEN: ${TOKEN}
       DB_HOST: ${DB_HOST:-redis}
@@ -32,7 +32,7 @@ services:
       MAIN_URL: ${MAIN_URL:-https://antijob.net}
       NEWS_URL: ${NEWS_URL:-https://antijob.media}
     networks:
-      - antijob_bot
+      - bot
     logging:
       driver: json-file
       options:
@@ -51,7 +51,7 @@ services:
     volumes:
       - redis:/data
     networks:
-      - antijob_bot
+      - bot
     deploy:
       update_config:
         order: stop-first
@@ -79,6 +79,6 @@ volumes:
   redis:
 
 networks:
-  antijob_bot:
+  bot:
     driver: overlay
     attachable: true
