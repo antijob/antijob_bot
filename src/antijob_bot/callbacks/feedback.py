@@ -23,7 +23,8 @@ async def set_feedback_value(chat_id: int, message_id: int, original: Message) -
 
 async def enter_feedback(update: Update, context: ContextTypes.DEFAULT_TYPE) -> object:
     reply_markup = InlineKeyboardMarkup.from_button(
-        InlineKeyboardButton("Отмена", callback_data=conversations.CANCEL_FEEDBACK_DATA)
+        InlineKeyboardButton(
+            "Отмена", callback_data=conversations.CANCEL_FEEDBACK_DATA)
     )
     await update.message.reply_text("Напишите сообщение.", reply_markup=reply_markup)
     return conversations.Conversation.EXPECT_MESSAGE
