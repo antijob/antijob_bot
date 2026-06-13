@@ -3,7 +3,7 @@ x-deploy: &deploy
     placement:
       constraints:
         - "node.role==worker"
-        - "node.labels.service==antijob_bot_reviews}"
+        - "node.labels.service==antijob_bot_reviews"
         - "node.labels.environment==production"
     replicas: 1
     update_config:
@@ -19,21 +19,25 @@ x-deploy: &deploy
       max_attempts: 2
       window: 120s
 services:
-
-  antijob_bot:
+  bot:
     <<: *deploy
-    image: antijob_bot:${IMAGE_TAG:-main}
+    image: antijob/antijob-bot:${IMAGE_TAG:-main}
     environment:
-      TOKEN: ${TOKEN}
+      TOKEN_FILE: /run/secrets/TOKEN
       DB_HOST: ${DB_HOST:-redis}
       DB_PORT: ${DB_PORT:-6379}
-      DB_PASSWORD: ${DB_PASSWORD}
+      DB_PASSWORD_FILE: /run/secrets/DB_PASSWORD
       ADMINS: ${ADMINS}
       FEEDBACK_CHAT_ID: ${FEEDBACK_CHAT_ID}
       MAIN_URL: ${MAIN_URL:-https://antijob.net}
       NEWS_URL: ${NEWS_URL:-https://antijob.media}
+    secrets:
+      - source: TOKEN
+        target: TOKEN
+      - source: DB_PASSWORD
+        target: DB_PASSWORD
     networks:
-      - antijob_bot
+      - bot
     logging:
       driver: json-file
       options:
@@ -45,17 +49,17 @@ services:
   redis:
     <<: *deploy
     image: redis:7-alpine
+    secrets:
+      - source: DB_PASSWORD
+        target: DB_PASSWORD
     command:
       - sh
       - -c
-      - redis-server --port ${DB_PORT:-6379} --requirepass "$$(cat
-        /run/secrets/redis_password)"
+      - redis-server --port ${DB_PORT:-6379} --requirepass "$$(cat /run/secrets/DB_PASSWORD)"
     volumes:
       - redis:/data
-    secrets:
-      - redis_password
     networks:
-      - antijob_bot
+      - bot
     deploy:
       update_config:
         order: stop-first
@@ -65,8 +69,7 @@ services:
       test:
         [
           "CMD-SHELL",
-          "redis-cli -p ${DB_PORT:-6379} -a \"$$(cat
-            /run/secrets/redis_password)\" ping | grep -q PONG",
+          'redis-cli -p ${DB_PORT:-6379} -a "$$(cat /run/secrets/DB_PASSWORD)" ping | grep -q PONG',
         ]
       interval: 10s
       timeout: 5s
@@ -84,11 +87,14 @@ volumes:
   redis:
 
 networks:
-  antijob_bot:
+  bot:
     driver: overlay
     attachable: true
 
 secrets:
-  redis_password:
+  TOKEN:
     external: true
-    name: antijob_bot_redis_password
+    name: secret.TOKEN
+  DB_PASSWORD:
+    external: true
+    name: secret.DB_PASSWORD
