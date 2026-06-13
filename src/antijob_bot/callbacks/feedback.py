@@ -24,14 +24,15 @@ async def set_feedback_value(chat_id: int, message_id: int, original: Message) -
 async def enter_feedback(update: Update, _context: ContextTypes.DEFAULT_TYPE) -> object:
     del _context
     reply_markup = InlineKeyboardMarkup.from_button(
-        InlineKeyboardButton(
-            "Отмена", callback_data=conversations.CANCEL_FEEDBACK_DATA)
+        InlineKeyboardButton("Отмена", callback_data=conversations.CANCEL_FEEDBACK_DATA)
     )
     await update.message.reply_text("Напишите сообщение.", reply_markup=reply_markup)
     return conversations.Conversation.EXPECT_MESSAGE
 
 
-async def follow_reviews_bot(update: Update, _context: ContextTypes.DEFAULT_TYPE) -> int:
+async def follow_reviews_bot(
+    update: Update, _context: ContextTypes.DEFAULT_TYPE
+) -> int:
     del _context
     await update.message.reply_text(
         "Подписывайтесь на @antijob_reviews_bot: https://t.me/antijob_reviews_bot",
