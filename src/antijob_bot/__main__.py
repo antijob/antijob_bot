@@ -32,6 +32,18 @@ Menu.init(
     ],
     [
         MenuItem(
+            KeyboardButton("Наш телеграмм-бот с отзывами о работе"),
+            callbacks.feedback.follow_reviews_bot,
+        )
+    ],
+    [
+        MenuItem(
+            KeyboardButton("Поддержать проект"),
+            callbacks.feedback.follow_support,
+        )
+    ],
+    [
+        MenuItem(
             KeyboardButton("Рассылка"),
             callbacks.broadcast.enter_broadcast,
             enter=conversations.Conversation.BROADCAST,
@@ -54,6 +66,7 @@ application = (
 filterwarnings("ignore", r".*CallbackQueryHandler", PTBUserWarning)
 
 start_handler = CommandHandler("start", callbacks.start.start)
+
 feedback_handler = ConversationHandler(
     entry_points=[Menu.entry_point_handler(conversations.Conversation.FEEDBACK)],
     states={
