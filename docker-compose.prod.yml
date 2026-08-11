@@ -31,6 +31,8 @@ services:
       FEEDBACK_CHAT_ID: ${FEEDBACK_CHAT_ID}
       MAIN_URL: ${MAIN_URL:-https://antijob.net}
       NEWS_URL: ${NEWS_URL:-https://antijob.media}
+    networks:
+      - antijob_bot
     secrets:
       - source: TOKEN
         target: TOKEN
@@ -73,6 +75,8 @@ services:
       timeout: 5s
       retries: 5
       start_period: 15s
+    networks:
+      - antijob_bot
     logging:
       driver: json-file
       options:
@@ -91,3 +95,6 @@ secrets:
   DB_PASSWORD:
     external: true
     name: secret.DB_PASSWORD
+
+networks:
+  antijob_bot:
