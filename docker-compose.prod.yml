@@ -36,8 +36,7 @@ services:
         target: TOKEN
       - source: DB_PASSWORD
         target: DB_PASSWORD
-    networks:
-      - bot
+
     logging:
       driver: json-file
       options:
@@ -58,8 +57,7 @@ services:
       - redis-server --port ${DB_PORT:-6379} --requirepass "$$(cat /run/secrets/DB_PASSWORD)"
     volumes:
       - redis:/data
-    networks:
-      - bot
+
     deploy:
       update_config:
         order: stop-first
@@ -85,11 +83,6 @@ services:
 
 volumes:
   redis:
-
-networks:
-  bot:
-    driver: overlay
-    attachable: true
 
 secrets:
   TOKEN:
