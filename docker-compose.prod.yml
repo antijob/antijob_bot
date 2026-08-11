@@ -61,10 +61,24 @@ services:
       - redis:/data
 
     deploy:
+      placement:
+        constraints:
+          - "node.role==worker"
+          - "node.labels.service==antijob_bot_reviews"
+          - "node.labels.environment==production"
+      replicas: 1
       update_config:
         order: stop-first
         parallelism: 1
         delay: 10s
+      rollback_config:
+        order: stop-first
+        parallelism: 1
+      restart_policy:
+        condition: any
+        delay: 15s
+        max_attempts: 5
+        window: 120s
     healthcheck:
       test:
         [
