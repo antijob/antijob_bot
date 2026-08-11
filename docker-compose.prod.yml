@@ -15,8 +15,8 @@ x-deploy: &deploy
       parallelism: 1
     restart_policy:
       condition: any
-      delay: 5s
-      max_attempts: 2
+      delay: 15s
+      max_attempts: 5
       window: 120s
 services:
   bot:
@@ -36,8 +36,7 @@ services:
         target: TOKEN
       - source: DB_PASSWORD
         target: DB_PASSWORD
-    networks:
-      - bot
+
     logging:
       driver: json-file
       options:
@@ -58,8 +57,7 @@ services:
       - redis-server --port ${DB_PORT:-6379} --requirepass "$$(cat /run/secrets/DB_PASSWORD)"
     volumes:
       - redis:/data
-    networks:
-      - bot
+
     deploy:
       update_config:
         order: stop-first
@@ -85,15 +83,6 @@ services:
 
 volumes:
   redis:
-
-networks:
-  bot:
-    driver: overlay
-    attachable: true
-    ipam:
-      driver: default
-      config:
-        - subnet: 10.20.30.0/24
 
 secrets:
   TOKEN:
