@@ -16,6 +16,17 @@ def feedback_key(chat_id: int, message_id: int) -> str:
     return f"feedback:{chat_id}:{message_id}"
 
 
+async def send_link(update: Update, text: str, button_text: str, url: str) -> None:
+    message = update.message
+    if message is None:
+        return
+
+    reply_markup = InlineKeyboardMarkup.from_button(
+        InlineKeyboardButton(button_text, url=url)
+    )
+    await message.reply_text(text, reply_markup=reply_markup)
+
+
 async def set_feedback_value(chat_id: int, message_id: int, original: Message) -> None:
     value = f"{original.chat.id} {original.id}"
     await client.set(feedback_key(chat_id, message_id), value)
@@ -34,18 +45,22 @@ async def follow_reviews_bot(
     update: Update, _context: ContextTypes.DEFAULT_TYPE
 ) -> int:
     del _context
-    await update.message.reply_text(
+    await send_link(
+        update,
         "Подписывайтесь на @antijob_reviews_bot: https://t.me/antijob_reviews_bot",
-        reply_markup=Menu.reply_markup(update),
+        "Открыть бота",
+        "https://t.me/antijob_reviews_bot",
     )
     return ConversationHandler.END
 
 
 async def follow_support(update: Update, _context: ContextTypes.DEFAULT_TYPE) -> int:
     del _context
-    await update.message.reply_text(
+    await send_link(
+        update,
         "Поддержите проект на Boosty: https://boosty.to/antijob",
-        reply_markup=Menu.reply_markup(update),
+        "Открыть Boosty",
+        "https://boosty.to/antijob",
     )
     return ConversationHandler.END
 

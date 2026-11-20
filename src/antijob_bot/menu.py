@@ -59,7 +59,7 @@ class Menu:
         cls,
         update: Update | None = None,
         *,
-        one_time_keyboard: bool = True,
+        one_time_keyboard: bool = False,
         **kwargs,
     ) -> ReplyKeyboardMarkup:
         if update and update.effective_user:
@@ -69,6 +69,8 @@ class Menu:
         return ReplyKeyboardMarkup(
             cls.keyboard(admin=admin),
             one_time_keyboard=one_time_keyboard,
+            is_persistent=True,
+            resize_keyboard=True,
             **kwargs,
         )
 
